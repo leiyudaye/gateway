@@ -3,7 +3,7 @@
  * @Author: lly
  * @Date: 2021-05-28 21:09:55
  * @LastEditors: lly
- * @LastEditTime: 2021-05-31 20:47:00
+ * @LastEditTime: 2021-05-31 23:43:05
  */
 package main
 
@@ -14,7 +14,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	reverse "gateway/reverseproxy"
+	reverse "gateway/reverse_proxy"
 	"net/http"
 
 	"github.com/go-kit/kit/log"

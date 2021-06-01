@@ -1,0 +1,16 @@
+syntax="proto3";
+package user;
+
+option go_package ="./user";
+
+message GetUserInfoReq {
+    int32 userID = 1; //用户ID
+}
+
+message GetUserInfoRsp {
+    int32 name = 1; //用户姓名
+}
+
+service UserInfo {
+    rpc  GetUserInfo (GetUserInfoReq) returns (GetUserInfoRsp);
+} 

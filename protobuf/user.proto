@@ -8,7 +8,7 @@ message GetUserInfoReq {
 }
 
 message GetUserInfoRsp {
-    int32 name = 1; //用户姓名
+    string name = 1; //用户姓名
 }
 
 service UserInfo {

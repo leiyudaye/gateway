@@ -3,13 +3,14 @@
  * @Author: lly
  * @Date: 2021-05-28 21:09:55
  * @LastEditors: lly
- * @LastEditTime: 2021-05-31 23:43:05
+ * @LastEditTime: 2021-06-01 22:37:56
  */
 package main
 
 import (
 	"flag"
 	"fmt"
+	"net"
 	"os"
 	"os/signal"
 	"syscall"
@@ -31,6 +32,14 @@ func init() {
 }
 
 func main() {
+	lis, err := net.Listen("tcp", ":8822")
+	if err != nil {
+		return
+	}
+	reverse.NewGrpcReverseProxy(lis)
+}
+
+func main1() {
 	// 创建环境变量
 	var (
 		consulHost = flag.String("consul.host", "127.0.0.1", "consul server ip address")

@@ -3,7 +3,7 @@
  * @Author: lly
  * @Date: 2021-05-31 23:21:56
  * @LastEditors: lly
- * @LastEditTime: 2021-06-01 00:11:07
+ * @LastEditTime: 2021-06-01 22:59:26
  */
 
 package gateway
@@ -17,9 +17,8 @@ import (
 )
 
 func NewGrpcReverseProxy(lis net.Listener) {
-
 	director := func(ctx context.Context, fullMethodName string) (context.Context, *grpc.ClientConn, error) {
-		c, err := grpc.DialContext(ctx, "localhost:50055", grpc.WithCodec(proxy.Codec()), grpc.WithInsecure())
+		c, err := grpc.DialContext(ctx, "localhost:8811", grpc.WithCodec(proxy.Codec()), grpc.WithInsecure())
 		return ctx, c, err
 	}
 

@@ -16,6 +16,13 @@ type WhileBalance struct {
 	index int
 }
 
+func abs(a int) int {
+	if a < 0 {
+		return -a
+	}
+	return a
+}
+
 func (b *WhileBalance) Add(params ...string) error {
 	if len(params) == 0 {
 		return errors.New("param invaild")
@@ -28,7 +35,7 @@ func (b *WhileBalance) Next() string {
 	if len(b.pool) == 0 {
 		return ""
 	}
-	addr := b.pool[b.index%len(b.pool)]
+	addr := b.pool[abs(b.index%len(b.pool))]
 	b.index++
 	return addr
 }

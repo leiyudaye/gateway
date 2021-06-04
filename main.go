@@ -15,6 +15,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	load "gateway/load_balance"
 	reverse "gateway/reverse_proxy"
 	"net/http"
 
@@ -36,7 +37,10 @@ func main() {
 	if err != nil {
 		return
 	}
-	reverse.NewGrpcReverseProxy(lis)
+
+	ld := &load.RandomBalance{}
+	ld.Add("127.0.0.1:8811")
+	reverse.NewGrpcReverseProxy(lis, ld)
 }
 
 func main1() {

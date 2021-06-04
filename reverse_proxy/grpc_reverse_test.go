@@ -8,6 +8,7 @@
 package gateway
 
 import (
+	load "gateway/load_balance"
 	"net"
 	"testing"
 )
@@ -19,6 +20,10 @@ func TestGrpcReverseProxy(t *testing.T) {
 	if err != nil {
 		t.Error("err")
 	}
-	NewGrpcReverseProxy(lis)
+
+	ld := &load.RandomBalance{}
+	ld.Add("127.0.0.1:8811")
+	NewGrpcReverseProxy(lis, ld)
+
 	t.Log("TestNewGrpcReverseProxy end")
 }

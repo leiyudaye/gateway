@@ -10,15 +10,17 @@ package gateway
 
 import (
 	"context"
+	load "gateway/load_balance"
 	proxy "gateway/reverse_proxy/proxy_comm"
 	"net"
 
 	"google.golang.org/grpc"
 )
 
-func NewGrpcReverseProxy(lis net.Listener) {
+func NewGrpcReverseProxy(lis net.Listener, ld load.BlanceInterface) {
 	director := func(ctx context.Context, fullMethodName string) (context.Context, *grpc.ClientConn, error) {
-		c, err := grpc.DialContext(ctx, "localhost:8811", grpc.WithCodec(proxy.Codec()), grpc.WithInsecure())
+		tagAddr, _ := ld.Get("")
+		c, err := grpc.DialContext(ctx, tagAddr, grpc.WithCodec(proxy.Codec()), grpc.WithInsecure())
 		return ctx, c, err
 	}
 

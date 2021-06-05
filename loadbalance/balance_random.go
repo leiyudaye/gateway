@@ -5,7 +5,7 @@
  * @LastEditors: lly
  * @LastEditTime: 2021-06-02 23:12:55
  */
-package gateway
+package loadbalance
 
 import (
 	"errors"

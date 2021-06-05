@@ -9,7 +9,8 @@ package main
 
 import (
 	"context"
-	pb "gateway/protobuf_go/user"
+
+	pb "github.com/leiyudaye/gateway/protobuf_go/user"
 )
 
 type UserInfoImpl struct {

@@ -3,9 +3,9 @@
  * @Author: lly
  * @Date: 2021-06-02 23:00:00
  * @LastEditors: lly
- * @LastEditTime: 2021-06-02 23:20:47
+ * @LastEditTime: 2021-06-05 17:32:41
  */
-package gateway
+package loadbalance
 
 import (
 	"errors"

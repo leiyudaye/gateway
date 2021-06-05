@@ -3,10 +3,10 @@
  * @Author: lly
  * @Date: 2021-06-02 23:09:26
  * @LastEditors: lly
- * @LastEditTime: 2021-06-02 23:13:07
+ * @LastEditTime: 2021-06-05 17:36:34
  */
 
-package gateway
+package loadbalance
 
 import (
 	"fmt"

@@ -3,21 +3,21 @@
  * @Author: lly
  * @Date: 2021-06-02 23:01:39
  * @LastEditors: lly
- * @LastEditTime: 2021-06-02 23:08:44
+ * @LastEditTime: 2021-06-05 21:12:05
  */
-package gateway
+package loadbalance
 
 const (
 	BlanceTypeRandom = 1
 	BlanceTypeWhile  = 2
 )
 
-type BlanceInterface interface {
+type BalanceInterface interface {
 	Add(params ...string) error
 	Get(string) (string, error)
 }
 
-func NewLoadBlance(bleType int) BlanceInterface {
+func NewLoadBlance(bleType int) BalanceInterface {
 	switch bleType {
 	case BlanceTypeRandom:
 		return new(RandomBalance)

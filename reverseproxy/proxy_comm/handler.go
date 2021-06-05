@@ -3,13 +3,13 @@
  * @Author: lly
  * @Date: 2021-05-31 23:38:59
  * @LastEditors: lly
- * @LastEditTime: 2021-05-31 23:40:14
+ * @LastEditTime: 2021-06-05 17:33:28
  */
 
 // Copyright 2017 Michal Witkowski. All Rights Reserved.
 // See LICENSE for licensing terms.
 
-package gateway
+package reverseproxy
 
 import (
 	"io"

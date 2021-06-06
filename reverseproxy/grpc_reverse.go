@@ -3,7 +3,7 @@
  * @Author: lly
  * @Date: 2021-05-31 23:21:56
  * @LastEditors: lly
- * @LastEditTime: 2021-06-06 12:09:16
+ * @LastEditTime: 2021-06-06 22:34:44
  */
 
 package reverseproxy
@@ -16,6 +16,7 @@ import (
 
 	"github.com/leiyudaye/gateway/discover"
 	"github.com/leiyudaye/gateway/log"
+	middleware "github.com/leiyudaye/gateway/middleware/grpc_middleware"
 	proxy "github.com/leiyudaye/gateway/reverseproxy/proxy_comm"
 
 	"google.golang.org/grpc"
@@ -48,6 +49,7 @@ func NewGrpcReverseProxy(listen net.Listener) {
 	}
 
 	s := grpc.NewServer(
+		grpc.ChainStreamInterceptor(middleware.GrpcFlowCount()),
 		grpc.CustomCodec(proxy.Codec()),
 		grpc.UnknownServiceHandler(proxy.TransparentHandler(director)),
 	)

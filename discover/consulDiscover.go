@@ -3,12 +3,13 @@
  * @Author: lly
  * @Date: 2021-06-05 20:31:49
  * @LastEditors: lly
- * @LastEditTime: 2021-06-06 00:19:41
+ * @LastEditTime: 2021-06-06 12:08:35
  */
 package discover
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 
 	"github.com/go-kit/kit/sd/consul"
@@ -36,7 +37,7 @@ func NewDiscoverClient(consulHost string, consulPort int) (DiscoverClient, error
 		Host:   consulHost,
 		Port:   consulPort,
 		client: client,
-		ld:     loadbalance.NewLoadBlance(1),
+		ld:     loadbalance.NewLoadBlance(loadbalance.BlanceTypeWhile),
 	}, err
 }
 
@@ -52,7 +53,7 @@ func (consulClient *ConsulDiscoverClient) Register(serviceName, instanceId, heal
 		Meta:    meta,
 		Check: &api.AgentServiceCheck{
 			DeregisterCriticalServiceAfter: "30s",
-			HTTP:                           "http://" + instanceHost + ":" + strconv.Itoa(instancePort) + healthCheckUrl,
+			HTTP:                           healthCheckUrl, //"http://" + instanceHost + ":" + strconv.Itoa(instancePort) + healthCheckUrl,
 			Interval:                       "15s",
 		},
 	}
@@ -88,7 +89,8 @@ func (c *ConsulDiscoverClient) Discover(serviceName string) (string, error) {
 
 	// 把服务地址添加到负载均衡器中
 	for _, svr := range result {
-		c.ld.Add(svr.Service.Address)
+		log.Debug(fmt.Sprintf("%s:%d", svr.Service.Address, svr.Service.Port))
+		c.ld.Add(fmt.Sprintf("%s:%d", svr.Service.Address, svr.Service.Port))
 	}
 
 	return c.ld.Get("")

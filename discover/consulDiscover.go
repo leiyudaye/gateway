@@ -3,7 +3,7 @@
  * @Author: lly
  * @Date: 2021-06-05 20:31:49
  * @LastEditors: lly
- * @LastEditTime: 2021-06-06 12:08:35
+ * @LastEditTime: 2021-06-09 23:36:25
  */
 package discover
 
@@ -51,11 +51,11 @@ func (consulClient *ConsulDiscoverClient) Register(serviceName, instanceId, heal
 		Address: instanceHost,
 		Port:    instancePort,
 		Meta:    meta,
-		Check: &api.AgentServiceCheck{
-			DeregisterCriticalServiceAfter: "30s",
-			HTTP:                           healthCheckUrl, //"http://" + instanceHost + ":" + strconv.Itoa(instancePort) + healthCheckUrl,
-			Interval:                       "15s",
-		},
+		// Check: &api.AgentServiceCheck{
+		// 	DeregisterCriticalServiceAfter: "30s",
+		// 	HTTP:                           healthCheckUrl,
+		// 	Interval:                       "15s",
+		// },
 	}
 
 	// 注册服务

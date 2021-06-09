@@ -3,7 +3,7 @@
  * @Author: lly
  * @Date: 2021-06-01 21:45:56
  * @LastEditors: lly
- * @LastEditTime: 2021-06-06 12:04:46
+ * @LastEditTime: 2021-06-09 23:36:37
  */
 package main
 
@@ -40,7 +40,7 @@ func main() {
 	if err != nil {
 		return
 	}
-	if !disConn.Register("user.UserInfo", lisAddr, "http://127.0.0.1:8811/healthCheck", *addr, *port, nil) {
+	if !disConn.Register("user.UserInfo", lisAddr, "", *addr, *port, nil) {
 		return
 	}
 

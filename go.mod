@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/armon/go-metrics v0.3.8 // indirect
 	github.com/fatih/color v1.12.0 // indirect
+	github.com/garyburd/redigo v1.6.2
 	github.com/go-kit/kit v0.10.0
 	github.com/golang/protobuf v1.5.2
 	github.com/hashicorp/consul/api v1.8.1

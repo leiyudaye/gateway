@@ -3,7 +3,7 @@
  * @Author: lly
  * @Date: 2021-06-11 22:28:42
  * @LastEditors: lly
- * @LastEditTime: 2021-06-12 03:00:52
+ * @LastEditTime: 2021-06-12 12:04:26
  */
 package redis
 
@@ -47,36 +47,36 @@ func Set(conf string, key string, v interface{}) error {
 	return nil
 }
 
-func ZAdd(conf string, key string, field string, value int64) (int64, error) {
-	conn, err := redis.Dial("tcp", conf)
-	if err != nil {
-		return 0, fmt.Errorf("redis connect failed, err=%v", err)
-	}
-	score, err := redis.Int64(conn.Do("ZADD", key, value, field))
-	if err != nil {
-		return 0, fmt.Errorf("zadd failed, err=%v", err)
-	}
-	return score, nil
-}
-
-func ZIncr(conf string, key string, field string, value int64) (int64, error) {
-	conn, err := redis.Dial("tcp", conf)
-	if err != nil {
-		return 0, fmt.Errorf("redis connect failed, err=%v", err)
-	}
-	score, err := redis.Int64(conn.Do("ZINCR", key, value, field))
-	if err != nil {
-		return 0, fmt.Errorf("zadd failed, err=%v", err)
-	}
-	return score, nil
-}
-
-func ZRem(conf string, key string, field string) error {
+func ZAdd(conf string, key string, member string, value int64) error {
 	conn, err := redis.Dial("tcp", conf)
 	if err != nil {
 		return fmt.Errorf("redis connect failed, err=%v", err)
 	}
-	_, err = conn.Do("ZREM", key, field)
+	_, err = (conn.Do("ZADD", key, value, member))
+	if err != nil {
+		return fmt.Errorf("zadd failed, err=%v", err)
+	}
+	return nil
+}
+
+func ZIncr(conf string, key string, member string, value int64) (int64, error) {
+	conn, err := redis.Dial("tcp", conf)
+	if err != nil {
+		return 0, fmt.Errorf("redis connect failed, err=%v", err)
+	}
+	score, err := redis.Int64(conn.Do("ZINCRBY", key, value, member))
+	if err != nil {
+		return 0, fmt.Errorf("zadd failed, err=%v", err)
+	}
+	return score, nil
+}
+
+func ZRem(conf string, key string, member string) error {
+	conn, err := redis.Dial("tcp", conf)
+	if err != nil {
+		return fmt.Errorf("redis connect failed, err=%v", err)
+	}
+	_, err = conn.Do("ZREM", key, member)
 	if err != nil {
 		return fmt.Errorf("zadd failed, err=%v", err)
 	}

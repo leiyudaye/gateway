@@ -6,6 +6,7 @@ require (
 	github.com/armon/go-metrics v0.3.8 // indirect
 	github.com/fatih/color v1.12.0 // indirect
 	github.com/garyburd/redigo v1.6.2
+	github.com/gin-gonic/gin v1.7.2
 	github.com/go-kit/kit v0.10.0
 	github.com/golang/protobuf v1.5.2
 	github.com/hashicorp/consul/api v1.8.1
@@ -13,6 +14,7 @@ require (
 	github.com/hashicorp/go-hclog v0.16.1 // indirect
 	github.com/hashicorp/go-immutable-radix v1.3.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
+	github.com/jhump/protoreflect v1.8.2
 	github.com/mattn/go-isatty v0.0.13 // indirect
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	golang.org/x/net v0.0.0-20210525063256-abc453219eb5

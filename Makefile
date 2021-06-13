@@ -6,4 +6,4 @@ all:
 pb:
 	echo $(ROOT)
 	echo $(PBPATH)
-	protoc  -I $(PBPATH) --go_out=plugins=grpc:$(PBDST)  $(PBPATH)/*.proto
+	protoc  -I $(PBPATH) --go_out=plugins=grpc:$(PBDST)  $(PBPATH)/test.proto

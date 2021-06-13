@@ -3,7 +3,7 @@
  * @Author: lly
  * @Date: 2021-05-28 21:09:55
  * @LastEditors: lly
- * @LastEditTime: 2021-06-06 12:25:37
+ * @LastEditTime: 2021-06-14 01:45:09
  */
 package main
 
@@ -15,6 +15,7 @@ func main() {
 	g := gateway.Gateway{}
 	go g.ServerHttp()
 	go g.ServerGrpc()
+	go g.ServerGinForGrpc()
 	for {
 	}
 }

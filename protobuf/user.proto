@@ -5,12 +5,38 @@ option go_package ="./user";
 
 message GetUserInfoReq {
     int32 userID = 1; //用户ID
+    string name = 2; // 用户名
 }
 
 message GetUserInfoRsp {
     string name = 1; //用户姓名
 }
 
+// message RegisterReq {
+// }
+
+// message RegisterRsp {
+// }
+
+// message LoginReq {
+// }
+
+// message LoginRsp {
+// }
+
+// message LoginCheckReq {
+// }
+
+// message LoginCheckRsp {
+// }
+
 service UserInfo {
-    rpc  GetUserInfo (GetUserInfoReq) returns (GetUserInfoRsp);
+    // 获取用户信息
+    rpc GetUserInfo (GetUserInfoReq) returns (GetUserInfoRsp);
+    // // 注册用户
+    // rpc Register (RegisterReq) returns (RegisterRsp);
+    // // 登录
+    // rpc Login (LoginReq) returns (LoginRsp);
+    // // 登录校验
+    // rpc LoginCheck(LoginCheckReq) returns (LoginCheckReq);
 } 

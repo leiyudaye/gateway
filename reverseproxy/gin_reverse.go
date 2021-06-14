@@ -3,7 +3,7 @@
  * @Author: lly
  * @Date: 2021-05-31 23:21:56
  * @LastEditors: lly
- * @LastEditTime: 2021-06-14 03:33:30
+ * @LastEditTime: 2021-06-14 23:44:44
  */
 
 package reverseproxy
@@ -13,85 +13,167 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/protoparse"
 	"github.com/jhump/protoreflect/dynamic"
 	"github.com/leiyudaye/gateway/discover"
 	lib "github.com/leiyudaye/gateway/lib/comm"
+	"github.com/leiyudaye/gateway/lib/util"
 	"github.com/leiyudaye/gateway/log"
-
 	"google.golang.org/grpc"
 )
 
-func NewGinForGrpcReverseProxy(gParams lib.GatewayParams) (string, error) {
+var (
+	gFilenames []string               // proto文件列表名
+	gFileDescs []*desc.FileDescriptor // protobuf文件描述
+)
+
+func init() {
+	// 读取proto文件
+	var parser protoparse.Parser
+	gFilenames = util.GetFileNameByPath("./protobuf")
+	if len(gFilenames) == 0 {
+		log.Error("read protobuf file failed")
+		return
+	}
+
+	var err error
+	gFileDescs, err = parser.ParseFiles(gFilenames...)
+	if err != nil {
+		log.Error("parser failed, file=%v, err=%v", gFilenames, err)
+	}
+	// TODO， 启定时器循环读
+}
+
+func convertType(fieldDesc *desc.FieldDescriptor, v interface{}) interface{} {
+	switch fieldDesc.GetType().String() {
+	case "TYPE_DOUBLE":
+	case "TYPE_FLOAT":
+	case "TYPE_INT64":
+		if reflect.TypeOf(v).Kind().String() == "float64" {
+			return int64(v.(float64))
+		}
+	case "TYPE_UINT64":
+		if reflect.TypeOf(v).Kind().String() == "float64" {
+			return uint64(v.(float64))
+		}
+	case "TYPE_INT32":
+		if reflect.TypeOf(v).Kind().String() == "float64" {
+			return int32(v.(float64))
+		}
+	case "TYPE_FIXED64":
+	case "TYPE_FIXED32":
+	case "TYPE_BOOL":
+	case "TYPE_STRING":
+	case "TYPE_GROUP":
+	case "TYPE_MESSAGE":
+	case "TYPE_BYTES":
+	case "TYPE_UINT32":
+	case "TYPE_ENUM":
+	case "TYPE_SFIXED32":
+	case "TYPE_SFIXED64":
+	case "TYPE_SINT32":
+	case "TYPE_SINT64":
+	default:
+	}
+	return v
+}
+
+func convertObject(object map[string]interface{}, srvReq *dynamic.Message) error {
+	for k, v := range object {
+		if reflect.TypeOf(v).Kind().String() != "map" ||
+			reflect.TypeOf(v).Kind().String() != "list" {
+			fieldDesc := srvReq.FindFieldDescriptorByName(k)
+			if fieldDesc == nil {
+				log.Error("no found this field, k=%v", k)
+				return fmt.Errorf("no found field, [%v]", k)
+			}
+			val := convertType(fieldDesc, v)
+			if err := srvReq.TrySetFieldByName(k, val); err != nil {
+				log.Error("try set field failed, err=%v", err)
+				return fmt.Errorf("try set field failed, [%v]", val)
+			}
+			srvReq.SetFieldByName(k, val)
+		} else {
+			return convertObject(v.(map[string]interface{}), srvReq)
+		}
+	}
+	return nil
+}
+
+func NewGinForGrpcReverseProxy(gParams lib.GatewayParams) (lib.GatewayRsp, error) {
 	var (
-		req           *dynamic.Message
-		rsp           *dynamic.Message
-		srvMethod     string = gParams.Module.Method
-		srvFullMethod string = "/" + gParams.Module.Module + "/" + gParams.Module.Method
-		reqName       string = srvMethod + "Req"
-		rspName       string = srvMethod + "Rsp"
+		srvReq        *dynamic.Message                                               // grpc服务请求参数
+		srvRsp        *dynamic.Message                                               // grpc服务返回参数
+		srvModule     string           = gParams.Module.Module                       // 服务方法名
+		srvMethod     string           = gParams.Module.Method                       // 服务方法名
+		srvFullMethod string           = fmt.Sprintf("/%v/%v", srvModule, srvMethod) // 服务的全量名称
+		srvReqName    string           = "user." + srvMethod + "Req"                 // 请求参数名称
+		srvRspName    string           = "user." + srvMethod + "Rsp"                 // 返回参数名称
+		gatewayRsp    lib.GatewayRsp                                                 // 返回参数
 	)
 
 	// 服务发现
 	disConn, err := discover.NewDiscoverClient("127.0.0.1", 8500)
 	if err != nil {
 		log.Error("discover connect failed. err=%v", err)
-		return "", nil
+		gatewayRsp.Code = lib.ErrDiscoverFailed
+		return gatewayRsp, fmt.Errorf("discover connect failed. err=%v", err)
 	}
 
 	tagAddr, err := disConn.Discover(gParams.Module.Module)
 	if err != nil {
 		log.Error(err.Error())
-		return "", nil
+		gatewayRsp.Code = lib.ErrDiscoverFailed
+		return gatewayRsp, err
+	}
+
+	for _, fileDesc := range gFileDescs {
+		fmt.Println(fileDesc)
+
+		// 请求Req参数
+		msgDesc := fileDesc.FindMessage(srvReqName)
+		if msgDesc == nil {
+			log.Error("no found message, reqNmae=%v", srvReqName)
+			continue
+		}
+		srvReq = dynamic.NewMessage(msgDesc)
+		err := convertObject(gParams.Module.Param.(map[string]interface{}), srvReq)
+		if err != nil {
+			gatewayRsp.Code = lib.ErrCovertFailed
+			return gatewayRsp, err
+		}
+
+		// 返回Rsp参数M
+		msgDesc = fileDesc.FindMessage(srvRspName)
+		if msgDesc == nil {
+			log.Error("no found message, rspNmae=%v", srvRspName)
+			return gatewayRsp, fmt.Errorf("no found message, rspNmae=%v", srvRspName)
+		}
+		srvRsp = dynamic.NewMessage(msgDesc)
+
+	}
+
+	if srvReq == nil || srvRsp == nil {
+		gatewayRsp.Code = lib.ErrNoFoundReqField
+		return gatewayRsp, fmt.Errorf("no found req or rsp")
 	}
 
 	// grpc 代理
 	conn, err := grpc.Dial(tagAddr, grpc.WithInsecure())
 	if err != nil {
-		return "", nil
+		gatewayRsp.Code = lib.ErrNetworkConnectFailed
+		return gatewayRsp, fmt.Errorf("grpc dial failed")
 	}
 	defer conn.Close()
 
-	// 读取proto文件
-	var parser protoparse.Parser
-	fileDescriptors, err := parser.ParseFiles("./protobuf/user.proto")
-	if err != nil {
-		fmt.Printf("err=%v", err)
-	}
-	fileDescriptor := fileDescriptors[0]
-	for _, msgDescriptor := range fileDescriptor.GetMessageTypes() {
-		fmt.Println(msgDescriptor.GetName())
-		if msgDescriptor.GetName() == reqName {
-			req = dynamic.NewMessage(msgDescriptor)
-			for k, v := range gParams.Module.Param.(map[string]interface{}) {
-				if reflect.TypeOf(v).Kind().String() == "float64" {
-					req.SetFieldByName(k, int32(v.(float64)))
-					continue
-				}
-				if err := req.TrySetFieldByName(k, v); err != nil {
-					fmt.Println(err)
-					return "", nil
-				}
-				req.SetFieldByName(k, v)
-			}
-		}
-
-		if msgDescriptor.GetName() == rspName {
-			rsp = dynamic.NewMessage(msgDescriptor)
-		}
-		// for _, fieldDesc := range msgDescriptor.GetFields() {
-		// 	if fieldDesc.GetName() == "userID" {
-		// 		req.TrySetFieldByName("userID", fieldDesc.GetType())
-		// 		req.SetFieldByName("userID", interface{}(1))
-		// 	}
-		// }
-	}
-
-	err = conn.Invoke(context.Background(), srvFullMethod, req, rsp)
+	err = conn.Invoke(context.Background(), srvFullMethod, srvReq, srvRsp)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(rsp)
-	bt, _ := rsp.MarshalJSON()
-	return string(bt), nil
+	fmt.Println(srvRsp)
+	bt, _ := srvRsp.MarshalJSON()
+	gatewayRsp.Code = 0
+	gatewayRsp.Data = string(bt)
+	return gatewayRsp, nil
 }

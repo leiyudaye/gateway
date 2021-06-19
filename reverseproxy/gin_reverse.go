@@ -3,7 +3,7 @@
  * @Author: lly
  * @Date: 2021-05-31 23:21:56
  * @LastEditors: lly
- * @LastEditTime: 2021-06-14 23:44:44
+ * @LastEditTime: 2021-06-20 00:34:00
  */
 
 package reverseproxy
@@ -12,12 +12,13 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/protoparse"
 	"github.com/jhump/protoreflect/dynamic"
 	"github.com/leiyudaye/gateway/discover"
-	lib "github.com/leiyudaye/gateway/lib/comm"
+	"github.com/leiyudaye/gateway/lib/comm"
 	"github.com/leiyudaye/gateway/lib/util"
 	"github.com/leiyudaye/gateway/log"
 	"google.golang.org/grpc"
@@ -101,30 +102,32 @@ func convertObject(object map[string]interface{}, srvReq *dynamic.Message) error
 	return nil
 }
 
-func NewGinForGrpcReverseProxy(gParams lib.GatewayParams) (lib.GatewayRsp, error) {
+func NewGinForGrpcReverseProxy(gParams comm.GatewayParams) (comm.GatewayRsp, error) {
 	var (
-		srvReq        *dynamic.Message                                               // grpc服务请求参数
-		srvRsp        *dynamic.Message                                               // grpc服务返回参数
-		srvModule     string           = gParams.Module.Module                       // 服务方法名
-		srvMethod     string           = gParams.Module.Method                       // 服务方法名
-		srvFullMethod string           = fmt.Sprintf("/%v/%v", srvModule, srvMethod) // 服务的全量名称
-		srvReqName    string           = "user." + srvMethod + "Req"                 // 请求参数名称
-		srvRspName    string           = "user." + srvMethod + "Rsp"                 // 返回参数名称
-		gatewayRsp    lib.GatewayRsp                                                 // 返回参数
+		srvReq         *dynamic.Message                              // grpc服务请求参数
+		srvRsp         *dynamic.Message                              // grpc服务返回参数
+		srvModule      = gParams.Module.Module                       // 服务方法名
+		srvMethod      = gParams.Module.Method                       // 服务方法名
+		srvFullMethod  = fmt.Sprintf("/%v/%v", srvModule, srvMethod) // 服务的全量名称
+		srvReqName     = srvMethod + "Req"                           // 请求参数名称
+		srvRspName     = srvMethod + "Rsp"                           // 返回参数名称
+		srvFullReqName = strings.Split(gParams.Module.Module, ".")[0] + "." + srvReqName
+		srvFullRspName = strings.Split(gParams.Module.Module, ".")[0] + "." + srvRspName
+		gatewayRsp     comm.GatewayRsp // 返回参数
 	)
 
 	// 服务发现
 	disConn, err := discover.NewDiscoverClient("127.0.0.1", 8500)
 	if err != nil {
 		log.Error("discover connect failed. err=%v", err)
-		gatewayRsp.Code = lib.ErrDiscoverFailed
+		gatewayRsp.Code = comm.ErrDiscoverFailed
 		return gatewayRsp, fmt.Errorf("discover connect failed. err=%v", err)
 	}
 
 	tagAddr, err := disConn.Discover(gParams.Module.Module)
 	if err != nil {
 		log.Error(err.Error())
-		gatewayRsp.Code = lib.ErrDiscoverFailed
+		gatewayRsp.Code = comm.ErrDiscoverFailed
 		return gatewayRsp, err
 	}
 
@@ -132,37 +135,37 @@ func NewGinForGrpcReverseProxy(gParams lib.GatewayParams) (lib.GatewayRsp, error
 		fmt.Println(fileDesc)
 
 		// 请求Req参数
-		msgDesc := fileDesc.FindMessage(srvReqName)
+		msgDesc := fileDesc.FindMessage(srvFullReqName)
 		if msgDesc == nil {
-			log.Error("no found message, reqNmae=%v", srvReqName)
+			log.Error("no found message, reqNmae=%v", srvFullReqName)
 			continue
 		}
 		srvReq = dynamic.NewMessage(msgDesc)
 		err := convertObject(gParams.Module.Param.(map[string]interface{}), srvReq)
 		if err != nil {
-			gatewayRsp.Code = lib.ErrCovertFailed
+			gatewayRsp.Code = comm.ErrCovertFailed
 			return gatewayRsp, err
 		}
 
 		// 返回Rsp参数M
-		msgDesc = fileDesc.FindMessage(srvRspName)
+		msgDesc = fileDesc.FindMessage(srvFullRspName)
 		if msgDesc == nil {
-			log.Error("no found message, rspNmae=%v", srvRspName)
-			return gatewayRsp, fmt.Errorf("no found message, rspNmae=%v", srvRspName)
+			log.Error("no found message, rspNmae=%v", srvFullRspName)
+			return gatewayRsp, fmt.Errorf("no found message, rspNmae=%v", srvFullRspName)
 		}
 		srvRsp = dynamic.NewMessage(msgDesc)
 
 	}
 
 	if srvReq == nil || srvRsp == nil {
-		gatewayRsp.Code = lib.ErrNoFoundReqField
+		gatewayRsp.Code = comm.ErrNoFoundReqField
 		return gatewayRsp, fmt.Errorf("no found req or rsp")
 	}
 
 	// grpc 代理
 	conn, err := grpc.Dial(tagAddr, grpc.WithInsecure())
 	if err != nil {
-		gatewayRsp.Code = lib.ErrNetworkConnectFailed
+		gatewayRsp.Code = comm.ErrNetworkConnectFailed
 		return gatewayRsp, fmt.Errorf("grpc dial failed")
 	}
 	defer conn.Close()

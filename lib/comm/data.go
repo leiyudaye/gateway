@@ -3,9 +3,9 @@
  * @Author: lly
  * @Date: 2021-06-14 02:47:47
  * @LastEditors: lly
- * @LastEditTime: 2021-06-14 23:26:12
+ * @LastEditTime: 2021-06-20 00:32:14
  */
-package lib
+package comm
 
 type GatewayParams struct {
 	Comm   interface{} `form:"comm" json:"comm"`

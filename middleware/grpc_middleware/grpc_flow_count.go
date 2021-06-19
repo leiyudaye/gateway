@@ -3,7 +3,7 @@
  * @Author: lly
  * @Date: 2021-06-06 22:24:33
  * @LastEditors: lly
- * @LastEditTime: 2021-06-10 00:07:57
+ * @LastEditTime: 2021-06-19 23:53:20
  */
 package middleware
 
@@ -37,7 +37,6 @@ func NewCounter() *Counter {
 		coter = new(Counter)
 
 		for range time.Tick(1 * time.Second) {
-			log.Debug(coter.GetCount())
 			coter.total += coter.count
 			log.Debug("qps=%v", coter.GetCount())
 			atomic.StoreUint64(&coter.count, 0)
@@ -49,8 +48,6 @@ func NewCounter() *Counter {
 
 func GrpcFlowCount() func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		log.Debug(time.Now(), "+1")
-
 		coter := NewCounter()
 		coter.Increase()
 		log.Debug("counter = %v", coter.GetCount())

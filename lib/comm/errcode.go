@@ -6,7 +6,7 @@
  * @LastEditTime: 2021-06-14 23:43:59
  */
 
-package lib
+package comm
 
 const (
 	ErrDiscoverFailed       int32 = 10001

@@ -1,0 +1,18 @@
+syntax="proto3";
+package flowcount;
+
+option go_package ="./flowcount";
+
+message ReportFlowCountReq {
+    int64 flowcount = 1;
+    int64 QPS = 2;
+    int32 interval = 3;
+}
+
+message ReportFlowCountRsp {
+}
+
+service FlowCount {
+    // 获取用户信息
+    rpc ReportFlowCount (ReportFlowCountReq) returns (ReportFlowCountRsp);
+} 

@@ -3,7 +3,7 @@
  * @Author: lly
  * @Date: 2021-05-31 23:21:56
  * @LastEditors: lly
- * @LastEditTime: 2021-06-20 00:34:00
+ * @LastEditTime: 2021-06-21 00:04:34
  */
 
 package reverseproxy
@@ -137,7 +137,7 @@ func NewGinForGrpcReverseProxy(gParams comm.GatewayParams) (comm.GatewayRsp, err
 		// 请求Req参数
 		msgDesc := fileDesc.FindMessage(srvFullReqName)
 		if msgDesc == nil {
-			log.Error("no found message, reqNmae=%v", srvFullReqName)
+			log.Error("no found message, reqName=%v", srvFullReqName)
 			continue
 		}
 		srvReq = dynamic.NewMessage(msgDesc)

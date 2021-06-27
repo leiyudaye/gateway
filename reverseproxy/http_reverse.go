@@ -10,6 +10,7 @@
 package reverseproxy
 
 import (
+	"github.com/leiyudaye/gateway/log"
 	"net/http"
 	"net/http/httputil"
 	"strings"
@@ -18,18 +19,25 @@ import (
 )
 
 func NewHttpReverseProxy() *httputil.ReverseProxy {
+	disConn, err := discover.NewDiscoverClient("127.0.0.1:8500")
+	if err != nil {
+		log.Error("discover connect failed. err=%v", err)
+		return nil
+	}
+
 	director := func(req *http.Request) {
 		reqPath := req.URL.Path
 		if reqPath == "" {
+			log.Error("no found url path")
 			return
 		}
 		pathArray := strings.Split(reqPath, "/")
-		srviceName := pathArray[1]
-		disConn, err := discover.NewDiscoverClient("127.0.0.1", 8500)
-		if err != nil {
+		if len(pathArray) == 0 {
+			log.Error("url parse failed.")
 			return
 		}
-		tagAddr, err := disConn.Discover(srviceName)
+
+		tagAddr, err := disConn.Discover(pathArray[1])
 		if err != nil {
 			return
 		}

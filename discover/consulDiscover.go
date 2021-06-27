@@ -10,8 +10,6 @@ package discover
 import (
 	"errors"
 	"fmt"
-	"strconv"
-
 	"github.com/go-kit/kit/sd/consul"
 	"github.com/hashicorp/consul/api"
 	"github.com/leiyudaye/gateway/loadbalance"
@@ -19,26 +17,22 @@ import (
 )
 
 type ConsulDiscoverClient struct {
-	Host   string
-	Port   int
 	client consul.Client
 	ld     loadbalance.BalanceInterface
 }
 
-func NewDiscoverClient(consulHost string, consulPort int) (DiscoverClient, error) {
-	consulConfig := api.DefaultConfig()
-	consulConfig.Address = consulHost + ":" + strconv.Itoa(consulPort)
-	apiClient, err := api.NewClient(consulConfig)
+func NewDiscoverClient(addr string) (DiscoverClient, error) {
+	conf := api.DefaultConfig()
+	conf.Address = addr
+	apiClient, err := api.NewClient(conf)
 	if err != nil {
 		return nil, err
 	}
 	client := consul.NewClient(apiClient)
 	return &ConsulDiscoverClient{
-		Host:   consulHost,
-		Port:   consulPort,
 		client: client,
 		ld:     loadbalance.NewLoadBlance(loadbalance.BlanceTypeWhile),
-	}, err
+	}, nil
 }
 
 // 服务注册

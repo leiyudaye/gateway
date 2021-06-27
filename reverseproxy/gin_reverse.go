@@ -117,7 +117,7 @@ func NewGinForGrpcReverseProxy(gParams comm.GatewayParams) (comm.GatewayRsp, err
 	)
 
 	// 服务发现
-	disConn, err := discover.NewDiscoverClient("127.0.0.1", 8500)
+	disConn, err := discover.NewDiscoverClient("127.0.0.1:8500")
 	if err != nil {
 		log.Error("discover connect failed. err=%v", err)
 		gatewayRsp.Code = comm.ErrDiscoverFailed

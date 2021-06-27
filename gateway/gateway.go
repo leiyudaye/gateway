@@ -56,6 +56,7 @@ func (g *Gateway) ServerGrpc() {
 	}
 	listen, err := net.Listen("tcp", g.GrpcListenAddr)
 	if err != nil {
+		log.Error("listen failed. err=%v", err)
 		return
 	}
 

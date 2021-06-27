@@ -36,7 +36,7 @@ func main() {
 	flowcount.RegisterFlowCountServer(s, new(FlowCountImpl))
 
 	// 注册服务
-	disConn, err := discover.NewDiscoverClient("127.0.0.1", 8500)
+	disConn, err := discover.NewDiscoverClient("127.0.0.1:8500")
 	if err != nil {
 		return
 	}

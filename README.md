@@ -10,10 +10,9 @@
 # 1.运行服务
 # 运行注册中心
 consul agent -dev
-redis-server
 
 # 运行Redis
-
+redis-server
 
 # 运行网关程序
 go run main.go 
